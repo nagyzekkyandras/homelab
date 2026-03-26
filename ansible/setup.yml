@@ -1,6 +1,9 @@
-- hosts: all
-  gather_facts: false
+- name: Setup servers
+  hosts: all
+  gather_facts: true
   roles:
     - role: init-server
       tags: init-server
+    - role: init-docker
+      tags: init-docker
   tags: prep
