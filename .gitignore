@@ -1,1 +1,1 @@
-./ansible/k0s_kubeconfig.yml
+ansible/k0s_kubeconfig
