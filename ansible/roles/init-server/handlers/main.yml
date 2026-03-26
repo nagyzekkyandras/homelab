@@ -1,0 +1,11 @@
+- name: restart systemd-logind
+  systemd:
+    name: systemd-logind
+    state: restarted
+    daemon_reload: yes
+
+#- name: restart docker
+#  systemd:
+#    name: docker
+#    state: restarted
+#    daemon_reload: yes

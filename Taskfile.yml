@@ -1,0 +1,22 @@
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  default:
+    desc: "Default task"
+    cmds:
+      - task -l
+  mac-route:
+    desc: "Add a route on macOS"
+    cmds:
+      - sudo route add -host 192.168.0.2 192.168.0.1
+  list-ansible-tags:
+    desc: "List Ansible tags"
+    cmds:
+      - ansible-playbook ansible/setup.yml --list-tags
+  asus-prep:
+    desc: "Run Ansible playbook for ASUS setup"
+    cmds:
+      - ansible-playbook -i ansible/inventories/asus ansible/setup.yml --tags prep -k -u root
