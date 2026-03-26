@@ -20,3 +20,15 @@ tasks:
     desc: "Run Ansible playbook for ASUS setup"
     cmds:
       - ansible-playbook -i ansible/inventories/asus ansible/setup.yml --tags prep -k -u root
+  kgn:
+    desc: "Use kubectl with k0s kubeconfig"
+    cmds:
+      - kubectl --kubeconfig=./ansible/k0s_kubeconfig get nodes
+  kgpa:
+    desc: "Use kubectl with k0s kubeconfig"
+    cmds:
+      - kubectl --kubeconfig=./ansible/k0s_kubeconfig get pods -A
+  fix-kubeconfig:
+    desc: "Fix kubeconfig server ip"
+    cmds:
+      - yq e '.clusters[0].cluster.server = "https://192.168.0.2:6443"' -i ansible/k0s_kubeconfig

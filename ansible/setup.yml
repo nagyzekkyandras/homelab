@@ -6,4 +6,6 @@
       tags: init-server
     - role: init-docker
       tags: init-docker
+    - role: init-k0s
+      tags: init-k0s
   tags: prep

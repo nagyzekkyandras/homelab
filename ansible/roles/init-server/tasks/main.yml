@@ -7,10 +7,7 @@
 - name: Base packages
   apt:
     name:
-      - apt-transport-https
-      - ca-certificates
       - curl
-      - gnupg
-      - lsb-release
+      - htop
     state: present
     update_cache: yes

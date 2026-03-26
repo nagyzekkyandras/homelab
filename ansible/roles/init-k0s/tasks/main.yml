@@ -1,0 +1,26 @@
+- name: k0s bináris letöltése és telepítése
+  shell: curl -sSLf https://get.k0s.sh | sh
+  args:
+    creates: /usr/local/bin/k0s
+- name: k0s konfigurációs könyvtár létrehozása
+  file:
+    path: /etc/k0s
+    state: directory
+    mode: '0755'
+- name: k0s installálása single-node módban
+  command: k0s install controller --single
+  args:
+    creates: /etc/systemd/system/k0scontroller.service
+- name: k0s szolgáltatás elindítása
+  systemd:
+    name: k0scontroller
+    state: started
+    enabled: yes
+- name: Várakozás a k0s indulására
+  pause:
+    seconds: 30
+- name: Kubeconfig fájl letöltése a lokális gépedre
+  fetch:
+    src: /var/lib/k0s/pki/admin.conf
+    dest: ./k0s_kubeconfig
+    flat: yes
