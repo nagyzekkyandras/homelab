@@ -1,0 +1,84 @@
+---
+- name: Setup Debian Trixie sources.list directly
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list
+    content: |
+      deb http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware
+      deb-src http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware
+
+      deb http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware
+      deb-src http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware
+
+      deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+      deb-src http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Kernel Headers and essential tools
+  ansible.builtin.apt:
+    name:
+      - linux-headers-amd64
+      - gpg
+      - curl
+      - apt-transport-https
+    state: present
+
+- name: Create keyrings directory
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download NVIDIA Container Toolkit GPG key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+    mode: '0644'
+
+- name: Add NVIDIA Container Toolkit repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/nvidia-container-toolkit.list
+    content: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /"
+    mode: '0644'
+
+- name: Final update and Install NVIDIA driver + toolkit
+  ansible.builtin.apt:
+    name:
+      - nvidia-driver
+      - nvidia-container-toolkit
+    state: present
+    update_cache: yes
+
+- name: Configure NVIDIA Runtimes
+  ansible.builtin.command: "nvidia-ctk runtime configure --runtime={{ item }}"
+  loop:
+    - docker
+    - containerd
+  register: runtime_config
+  changed_when: runtime_config.rc == 0
+
+- name: Restart services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+    daemon_reload: yes
+  loop:
+    - docker
+    - containerd
+  when: runtime_config.changed
+
+- name: Check GPU
+  ansible.builtin.command: nvidia-smi
+  register: nvidia_status
+  changed_when: false
+  ignore_errors: true
+
+- name: Display GPU Status
+  ansible.builtin.debug:
+    msg: "{{ nvidia_status.stdout_lines }}"
+  when: nvidia_status.rc == 0

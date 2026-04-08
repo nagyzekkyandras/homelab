@@ -8,4 +8,6 @@
       tags: init-docker
     - role: init-k0s
       tags: init-k0s
+    - role: init-nvidia
+      tags: init-nvidia
   tags: prep

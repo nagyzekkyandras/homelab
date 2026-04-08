@@ -11,3 +11,24 @@
       - htop
     state: present
     update_cache: yes
+
+- name: Ensure IP forwarding is enabled
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Set iptables FORWARD policy to ACCEPT
+  ansible.builtin.command: iptables -P FORWARD ACCEPT
+  changed_when: false
+
+- name: Install iptables-persistent to save rules
+  ansible.builtin.apt:
+    name: iptables-persistent
+    state: present
+
+- name: Save iptables rules
+  ansible.builtin.shell: netfilter-persistent save
+  changed_when: false
