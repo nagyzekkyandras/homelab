@@ -1,0 +1,25 @@
+version: '3.8'
+
+networks:
+  n8n-net:
+    driver: bridge
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n-server
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST={{ n8n_host | default('192.168.0.253') }}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://{{ n8n_host | default('192.168.0.253') }}:5678/
+      - GENERIC_TIMEZONE={{ n8n_timezone | default('Europe/Budapest') }}
+      - N8N_SECURE_COOKIE=false # <--- EZT A SORT ADD HOZZÁ
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+    networks:
+      - n8n-net

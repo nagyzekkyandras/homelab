@@ -52,7 +52,7 @@
 
 - name: Docker Compose fájl generálása a Jinja sablonból
   template:
-    src: docker-compose.yml.j2
+    src: docker-compose-gitea.yml.j2
     dest: /opt/gitea-stack/docker-compose.yml
     mode: '0644'
   when: deploy_gitea | default(false) | bool
@@ -62,3 +62,33 @@
     project_src: /opt/gitea-stack
     state: present
   when: deploy_gitea | default(false) | bool
+
+- name: n8n stack főmappa létrehozása az /opt alatt
+  file:
+    path: /opt/n8n-stack
+    state: directory
+    mode: '0755'
+  when: deploy_n8n | default(false) | bool
+
+- name: n8n adatmappa létrehozása a megfelelő node UID/GID-vel (Jogosultság fix)
+  file:
+    path: /opt/n8n-stack/n8n-data
+    state: directory
+    owner: '1000'
+    group: '1000'
+    mode: '0775'
+  when: deploy_n8n | default(false) | bool
+
+- name: n8n Docker Compose fájl generálása a Jinja sablonbóll
+  template:
+    src: docker-compose-n8n.yml.j2
+    dest: /opt/n8n-stack/docker-compose.yml
+    mode: '0644'
+  when: deploy_n8n | default(false) | bool
+
+- name: n8n Docker Compose stack elindítása
+  community.docker.docker_compose_v2:
+    project_src: /opt/n8n-stack
+    state: present
+    recreate: always
+  when: deploy_n8n | default(false) | bool
