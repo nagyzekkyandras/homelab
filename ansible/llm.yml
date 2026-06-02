@@ -1,0 +1,7 @@
+- name: Setup k0s
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: init-ollama
+      tags: init-ollama
+  tags: llm

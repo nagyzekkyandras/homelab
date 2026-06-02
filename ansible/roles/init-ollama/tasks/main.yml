@@ -1,0 +1,56 @@
+---
+# Mivel a curl és a driverek már fent vannak, egyből az ellenőrzéssel indítunk
+
+- name: Ellenőrizzük, hogy az Ollama telepítve van-e már
+  ansible.builtin.command: which ollama
+  register: ollama_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Ollama telepítése a hivatalos scripttel
+  ansible.builtin.shell: "curl -fsSL https://ollama.com/install.sh | sh"
+  # Az előző playbookod miatt az Nvidia driver már él, 
+  # így a script automatikusan felismeri és CUDA támogatással telepíti.
+  when: ollama_check.rc != 0
+  notify: Restart ollama
+
+- name: Ollama systemd konfiguráció testreszabása
+  ansible.builtin.file:
+    path: /etc/systemd/system/ollama.service.d
+    state: directory
+    mode: '0755'
+
+- name: Környezeti változók beállítása (GPU elérés biztosítása)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/ollama.service.d/override.conf
+    content: |
+      [Service]
+      Environment="OLLAMA_HOST={{ ollama_host }}"
+      # Opcionális biztonsági mentés: Ha a systemd valamiért nem látná a GPU-t,
+      # ezzel kényszeríthetjük, hogy keresse a CUDA drivereket:
+      # Environment="LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64"
+    mode: '0644'
+  notify: Reload systemd and restart ollama
+
+- name: Biztosítjuk, hogy az Ollama fut és automatikusan elindul
+  ansible.builtin.systemd:
+    name: ollama
+    state: started
+    enabled: yes
+
+# Erre a pontra az Ollama már fut. Megvárjuk, amíg az API életre kel,
+# mielőtt elkezdenénk letölteni a modelleket.
+- name: Várunk az Ollama API indulására
+  ansible.builtin.uri:
+    url: "http://{{ ollama_host }}:11434/"
+    status_code: 200
+  retries: 5
+  delay: 2
+
+- name: Kiválasztott AI modellek letöltése
+  ansible.builtin.command: "ollama run {{ item }}"
+  loop: "{{ ollama_models }}"
+  register: model_download
+  async: 1800
+  poll: 10
+  changed_when: "'downloading' in model_download.stdout or 'success' in model_download.stdout"

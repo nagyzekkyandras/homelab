@@ -1,0 +1,5 @@
+---
+# A modellek listája, amit szeretnél automatikusan letölteni
+ollama_models:
+  - llama3.2
+ollama_host: "127.0.0.1"

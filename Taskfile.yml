@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  GREETING: Hello, World!
+  ASUSIP: "192.168.0.253"
 
 tasks:
   default:
@@ -11,7 +11,7 @@ tasks:
   mac-route:
     desc: "Add a route on macOS"
     cmds:
-      - sudo route add -host 192.168.0.2 192.168.0.1
+      - sudo route add -host {{.ASUSIP}} 192.168.0.1
   list-ansible-tags:
     desc: "List Ansible tags"
     cmds:
@@ -24,6 +24,10 @@ tasks:
     desc: "Run Ansible playbook for ASUS NVIDIA setup"
     cmds:
       - ansible-playbook -i ansible/inventories/asus ansible/setup.yml --tags init-nvidia -k -u root
+  asus-llm-setup:
+    desc: "Run Ansible playbook for ASUS LLM setup"
+    cmds:
+      - ansible-playbook -i ansible/inventories/asus ansible/llm.yml --tags llm -k -u root
   kgn:
     desc: "Use kubectl with k0s kubeconfig"
     cmds:
@@ -35,7 +39,7 @@ tasks:
   fix-kubeconfig:
     desc: "Fix kubeconfig server ip"
     cmds:
-      - yq e '.clusters[0].cluster.server = "https://192.168.0.2:6443"' -i ansible/k0s_kubeconfig
+      - yq e '.clusters[0].cluster.server = "https://{{.ASUSIP}}:6443"' -i ansible/k0s_kubeconfig
   grafana-helm-chart:
     desc: "Add Grafana Helm chart repository and search for charts"
     cmds:

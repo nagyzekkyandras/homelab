@@ -2,3 +2,4 @@ ansible/k0s_kubeconfig
 *.tgz
 *.log
 .DS_Store
+*.code-workspace
