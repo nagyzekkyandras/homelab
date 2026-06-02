@@ -1,2 +1,7 @@
 [all]
 192.168.0.253
+
+[all:vars]
+deploy_gitea=true
+gitea_runner_name=prod-runner-01
+gitea_runner_token=j90wXRprV4LpRE4pBEHB9uHDjh8gON1Axqalauva

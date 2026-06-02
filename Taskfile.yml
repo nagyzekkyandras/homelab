@@ -12,7 +12,11 @@ tasks:
     desc: "Add a route on macOS"
     cmds:
       - sudo route add -host {{.ASUSIP}} 192.168.0.1
-  list-ansible-tags:
+  ansible-install-deps:
+    desc: "Install Ansible dependencies"
+    cmds:
+      - ansible-galaxy collection install -r requirements.yml
+  ansible-list-tags:
     desc: "List Ansible tags"
     cmds:
       - ansible-playbook ansible/setup.yml --list-tags
@@ -20,28 +24,32 @@ tasks:
     desc: "Run Ansible playbook for ASUS setup"
     cmds:
       - ansible-playbook -i ansible/inventories/asus ansible/setup.yml --tags prep -k -u root
-  asus-nvidia-setup:
+  asus-docker:
+    desc: "Run Ansible playbook for ASUS setup"
+    cmds:
+      - ansible-playbook -i ansible/inventories/asus ansible/docker.yml --tags docker -k -u root
+  asus-nvidia:
     desc: "Run Ansible playbook for ASUS NVIDIA setup"
     cmds:
       - ansible-playbook -i ansible/inventories/asus ansible/setup.yml --tags init-nvidia -k -u root
-  asus-llm-setup:
+  asus-llm:
     desc: "Run Ansible playbook for ASUS LLM setup"
     cmds:
       - ansible-playbook -i ansible/inventories/asus ansible/llm.yml --tags llm -k -u root
-  kgn:
-    desc: "Use kubectl with k0s kubeconfig"
-    cmds:
-      - kubectl --kubeconfig=./ansible/k0s_kubeconfig get nodes
-  kgpa:
-    desc: "Use kubectl with k0s kubeconfig"
-    cmds:
-      - kubectl --kubeconfig=./ansible/k0s_kubeconfig get pods -A
-  fix-kubeconfig:
-    desc: "Fix kubeconfig server ip"
-    cmds:
-      - yq e '.clusters[0].cluster.server = "https://{{.ASUSIP}}:6443"' -i ansible/k0s_kubeconfig
-  grafana-helm-chart:
-    desc: "Add Grafana Helm chart repository and search for charts"
-    cmds:
-      - helm repo add grafana https://grafana.github.io/helm-charts
-      - helm search repo grafana
+#  kgn:
+#    desc: "Use kubectl with k0s kubeconfig"
+#    cmds:
+#      - kubectl --kubeconfig=./ansible/k0s_kubeconfig get nodes
+#  kgpa:
+#    desc: "Use kubectl with k0s kubeconfig"
+#    cmds:
+#      - kubectl --kubeconfig=./ansible/k0s_kubeconfig get pods -A
+#  fix-kubeconfig:
+#    desc: "Fix kubeconfig server ip"
+#    cmds:
+#      - yq e '.clusters[0].cluster.server = "https://{{.ASUSIP}}:6443"' -i ansible/k0s_kubeconfig
+#  grafana-helm-chart:
+#    desc: "Add Grafana Helm chart repository and search for charts"
+#    cmds:
+#      - helm repo add grafana https://grafana.github.io/helm-charts
+#      - helm search repo grafana

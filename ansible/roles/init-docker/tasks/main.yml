@@ -42,3 +42,23 @@
     name: docker
     state: started
     enabled: yes
+
+- name: Gitea stack mappa létrehozása az /opt alatt
+  file:
+    path: /opt/gitea-stack
+    state: directory
+    mode: '0755'
+  when: deploy_gitea | default(false) | bool
+
+- name: Docker Compose fájl generálása a Jinja sablonból
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/gitea-stack/docker-compose.yml
+    mode: '0644'
+  when: deploy_gitea | default(false) | bool
+
+- name: Gitea Docker Compose stack elindítása
+  community.docker.docker_compose_v2:
+    project_src: /opt/gitea-stack
+    state: present
+  when: deploy_gitea | default(false) | bool

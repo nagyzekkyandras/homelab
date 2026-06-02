@@ -1,0 +1,7 @@
+- name: Setup docker only
+  hosts: all
+  gather_facts: true
+  roles:
+    - role: init-docker
+      tags: init-docker
+  tags: docker
