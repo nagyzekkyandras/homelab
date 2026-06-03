@@ -1,0 +1,41 @@
+networks:
+  ai-net:
+    driver: bridge
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-backend
+    restart: always
+#    network_mode: "host"
+    ports:
+      - "11434:11434"
+    dns:
+      - 8.8.8.8
+    volumes:
+      - ./ollama-data:/root/.ollama
+    networks:
+      - ai-net
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui-frontend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_SECRET_KEY={{ open_webui_secret | default('super_secret_key_123') }}
+    volumes:
+      - ./webui-data:/app/backend/data
+    networks:
+      - ai-net
+    depends_on:
+      - ollama

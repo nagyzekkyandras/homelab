@@ -43,6 +43,29 @@
     state: started
     enabled: yes
 
+- name: NVIDIA Container Toolkit GPG kulcs letöltése
+  get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+    mode: '0644'
+
+- name: NVIDIA Container Toolkit tároló hozzáadása
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/amd64 /"
+    state: present
+    filename: nvidia-container-toolkit
+
+- name: NVIDIA Container Toolkit telepítése
+  apt:
+    name: nvidia-container-toolkit
+    state: present
+    update_cache: yes
+
+- name: Docker service újraindítása az NVIDIA támogatás aktiválásához
+  systemd:
+    name: docker
+    state: restarted
+
 - name: Gitea stack mappa létrehozása az /opt alatt
   file:
     path: /opt/gitea-stack
@@ -90,5 +113,39 @@
   community.docker.docker_compose_v2:
     project_src: /opt/n8n-stack
     state: present
-    recreate: always
   when: deploy_n8n | default(false) | bool
+
+- name: AI Docker Compose fájl generálása a Jinja sablonból
+  template:
+    src: docker-compose-ollama.yml.j2
+    dest: /opt/ai-stack/docker-compose.yml
+    mode: '0644'
+  when: deploy_ai | default(false) | bool
+
+- name: AI Docker Compose stack elindítása
+  community.docker.docker_compose_v2:
+    project_src: /opt/ai-stack
+    state: present
+  when: deploy_ai | default(false) | bool
+
+- name: Kivárjuk, amíg az Ollama szerver teljesen elindul
+  wait_for:
+    port: 11434
+    host: localhost
+    delay: 5
+    timeout: 300
+  when: deploy_ai | default(false) | bool
+
+- name: A hivatalos Qwen2.5 3B modell letöltése az Ollama-ba
+  shell:
+    cmd: docker exec ollama-backend ollama pull qwen2.5:3b
+  register: model_pull
+  changed_when: "'success' in model_pull.stdout"
+  when: deploy_ai | default(false) | bool
+
+#- name: A specifikus Qwen3 4B modell letöltése az Ollama-ba
+#  shell:
+#    cmd: docker exec ollama-backend ollama run hub.docker.com/ai/qwen3:4B-UD-Q4_K_XL
+#  register: model_pull
+#  changed_when: "'success' in model_pull.stdout"
+#  when: deploy_ai | default(false) | bool

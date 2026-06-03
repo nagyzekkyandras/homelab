@@ -9,3 +9,5 @@ gitea_runner_token=j90wXRprV4LpRE4pBEHB9uHDjh8gON1Axqalauva
 deploy_n8n=true
 n8n_host=192.168.0.253
 n8n_timezone=Europe/Budapest
+
+deploy_ai=true
