@@ -1,0 +1,19 @@
+---
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server:4.123.0
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
+      - PASSWORD=password #optional
+      - SUDO_PASSWORD=password #optional
+#      - PROXY_DOMAIN=192.168.0.253 #optional
+      - DEFAULT_WORKSPACE=/config/workspace #optional
+      - PWA_APPNAME=code-server #optional
+    volumes:
+      - /opt/code/data:/config
+    ports:
+      - 8443:8443
+    restart: unless-stopped

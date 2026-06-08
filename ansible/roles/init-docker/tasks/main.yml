@@ -143,6 +143,35 @@
   changed_when: "'success' in model_pull.stdout"
   when: deploy_ai | default(false) | bool
 
+- name: code főmappa létrehozása az /opt alatt
+  file:
+    path: /opt/code
+    state: directory
+    mode: '0755'
+  when: deploy_code | default(false) | bool
+
+- name: code adatmappa létrehozása a megfelelő node UID/GID-vel (Jogosultság fix)
+  file:
+    path: /opt/code/data
+    state: directory
+    owner: '1000'
+    group: '1000'
+    mode: '0775'
+  when: deploy_code | default(false) | bool
+
+- name: code Docker Compose fájl generálása a Jinja sablonból
+  template:
+    src: docker-compose-code.yml.j2
+    dest: /opt/code/docker-compose.yml
+    mode: '0644'
+  when: deploy_code | default(false) | bool
+
+- name: code Docker Compose elindítása
+  community.docker.docker_compose_v2:
+    project_src: /opt/code
+    state: present
+  when: deploy_code | default(false) | bool
+
 #- name: A specifikus Qwen3 4B modell letöltése az Ollama-ba
 #  shell:
 #    cmd: docker exec ollama-backend ollama run hub.docker.com/ai/qwen3:4B-UD-Q4_K_XL

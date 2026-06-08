@@ -11,3 +11,5 @@ n8n_host=192.168.0.253
 n8n_timezone=Europe/Budapest
 
 deploy_ai=true
+
+deploy_code=true
